@@ -9,12 +9,12 @@ public class Room {
     private Reservation reservation;
     private boolean isAvailable;
 
-    public Room(int roomNumber, int floorNumber, String roomType, double rate, int maxCapacity) {
+    public Room(int roomNumber, int floorNumber, String roomType, int maxCapacity) {
         this.isAvailable = true;
         this.roomNumber = roomNumber;
         this.floorNumber = floorNumber;
         this.roomType = roomType;
-        this.rate = rate;
+        this.rate = Payment.getRoomCost(roomType);
         this.maxCapacity = maxCapacity;
         this.reservation = null;
     }
@@ -23,7 +23,7 @@ public class Room {
         return isAvailable;
     }
 
-    public void setAvailability(boolean setValue){
+    public void setAvailability(boolean setValue) {
         isAvailable = setValue;
     }
 

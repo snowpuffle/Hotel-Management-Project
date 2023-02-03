@@ -1,11 +1,9 @@
 package src.Controller;
 
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import src.Model.Guest;
 import src.Model.Hotel;
@@ -14,13 +12,11 @@ import src.Model.Room;
 import src.View.HotelView;
 
 public class HotelManager {
-    private Scanner input;
     private Hotel hotel;
     private HotelView view;
 
     public HotelManager(Hotel hotel) {
         this.hotel = hotel;
-        this.input = new Scanner(System.in);
     }
 
     // Initialize Hotel View
@@ -28,15 +24,16 @@ public class HotelManager {
         this.view = view;
     }
 
-    // Add a Reservation
+    /* ~ Management Methods ~ */
+    // 1. Add a Reservation
     public void addReservation() {
         view.displayAddReservation();
     }
 
-    // Add a Reservation Helper
+    // 1. Add a Reservation Helper
     public int addReservationHelper(int guestID, int guestNumber, String startDate, String endDate) {
 
-        Guest guest = getGuestByID(guestID);
+        Guest guest = findGuestByID(guestID);
         Room room = findAvailableRoom(guestNumber);
         boolean validDate = isValidDateFormat(startDate) && isValidDateFormat(endDate);
         long lengthOfStay = calculateLengthOfStay(startDate, endDate);
@@ -50,20 +47,139 @@ public class HotelManager {
         } else if (room == null) {
             return -4;
         } else {
-            Reservation reservation = new Reservation(guest, room, startDate, endDate, lengthOfStay);
+            Reservation reservation = new Reservation(guest, room.getRoomType(),
+                    startDate, endDate, lengthOfStay, guestNumber);
             hotel.addReservation(reservation);
-            room.setAvailability(false);
             return 1;
         }
     }
 
+    // 2. Add a New Guest to Hotel
+    public void addGuest() {
+        view.displayAddGuest();
+    }
+
+    // 2. Add a Guest Helper
+    public void addGuestHelper(String guestName) {
+        // Create a new Guest object
+        Guest guest = new Guest(guestName);
+
+        // Add Guest to list in Hotel
+        hotel.addGuest(guest);
+    }
+
+    // 3. Check-In Guest
+    public void checkInGuest() {
+        // View Display
+        view.displayCheckInGuest();
+    }
+
+    // 3. Check-In Guest Helper
+    public int checkInGuestHelper(int reservationID) {
+        // Find Reservation using ID
+        Reservation reservation = findReservationByID(reservationID);
+
+        if (reservation != null) {
+            Room room = findAvailableRoom(reservation.getNumberOfGuests());
+            if (reservation.getStatus() == "Confirmed" && room != null)
+                if (room != null) {
+                    room.setAvailability(false);
+                    reservation.setRoom(room);
+                    reservation.setStatus("Active");
+                    return 1;
+                }
+            return -1;
+        } else {
+            return -2;
+        }
+    }
+
+    // 4. Check-Out Guest
+    public void checkOutGuest() {
+        view.displayCheckOutGuest();
+    }
+
+    // 4. Check-Out Guest Helper
+    public int checkOutGuestHelper(int reservationID) {
+        // Find Reservation using ID
+        Reservation reservation = findReservationByID(reservationID);
+
+        if (reservation != null) {
+            Room room = reservation.getRoom();
+            if (reservation.getStatus() == "Active" && room != null) {
+                room.setAvailability(true);
+                reservation.setStatus("Past");
+                return 1;
+            }
+            // Cannot Find Room in Reservation
+            return -1;
+        } else {
+            // Cannot Find Active Reservation
+            return -2;
+        }
+    }
+
+    // 5. Delete a Reservation
+    public void deleteReservation() {
+        view.displayDeleteReservation();
+    }
+
+    // 5. Delete a Reservation Helper
+    public int deleteReservationHelper(int reservationID) {
+
+        Reservation reservation = findReservationByID(reservationID);
+
+        if (reservation != null) {
+            hotel.removeReservation(reservation);
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    // 6. Delete an Existing Guest
+    public void deleteGuest() {
+        view.displayDeleteGuest();
+    }
+
+    // 6. Delete an Existing Guest Helper
+    public int deleteGuestHelper(int guestID) {
+        // Try to find the Guest using ID
+        Guest guest = findGuestByID(guestID);
+
+        // Remove only if the Guest is found
+        if (guest != null) {
+            hotel.removeGuest(guest);
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
     // Add a Room
-    public void addRoom(int roomNumber, int floorNumber, String roomType, double rate, int maxCapacity) {
-        Room room = new Room(roomNumber, floorNumber, roomType, rate, maxCapacity);
+    public void addRoom(int roomNumber, int floorNumber, String roomType, int maxCapacity) {
+        Room room = new Room(roomNumber, floorNumber, roomType, maxCapacity);
         hotel.addRoom(room);
     }
 
-    // Find an Available Room
+    /* ~ Getter Methods ~ */
+    // 7. Get List of Reservations from Hotel
+    public ArrayList<Reservation> getReservationList() {
+        return hotel.getReservationList();
+    }
+
+    // 8. Get List of Guests from Hotel
+    public ArrayList<Guest> getGuestList() {
+        return hotel.getGuestList();
+    }
+
+    // 9. Get List of Rooms from Hotel
+    public ArrayList<Room> getRoomList() {
+        return hotel.getRoomList();
+    }
+
+    /* ~ Helper Methods ~ */
+    // Find an Available Room by Number of Guests
     public Room findAvailableRoom(int numberOfGuests) {
         for (Room room : hotel.getRoomList()) {
             if (room.getAvailability() == true && room.getMaxCapacity() >= numberOfGuests) {
@@ -73,45 +189,18 @@ public class HotelManager {
         return null;
     }
 
-    // Add a New Guest to Hotel
-    public void addGuest() {
-        view.displayAddGuest();
-    }
-
-    // Add a Guest Helper
-    public void addGuestHelper(String guestName) {
-        // Create a new Guest object
-        Guest guest = new Guest(guestName);
-
-        // Add Guest to list in Hotel
-        hotel.addGuest(guest);
-    }
-
-    // Remove an Existing Guest from Hotel
-    public void removeGuest() {
-
-        // Get the Guest ID
-        System.out.print("Enter Guest ID: ");
-        if (input.hasNextInt()) {
-            int guestID = input.nextInt();
-
-            // Try to find the Guest using ID
-            Guest guest = getGuestByID(guestID);
-
-            // Remove only if the Guest is found
-            if (guest == null) {
-                System.out.println("ERROR: Cannot Find Guest with ID " + guestID + ".");
-            } else {
-                hotel.removeGuest(guest);
-                System.out.println("SUCCESS: Removed Guest with ID " + guestID + ".");
+    // Find Reservation by ID
+    public Reservation findReservationByID(int reservationID) {
+        for (Reservation reservation : hotel.getReservationList()) {
+            if (reservation.getReservationID() == reservationID) {
+                return reservation;
             }
-        } else {
-            System.out.println("ERROR: ID is Not Valid.");
         }
+        return null;
     }
 
-    // Get Guest by Guest ID
-    public Guest getGuestByID(int guestID) {
+    // Find Guest by Guest ID
+    public Guest findGuestByID(int guestID) {
         for (Guest guest : hotel.getGuestList()) {
             if (guest.getGuestID() == guestID) {
                 return guest;
@@ -122,28 +211,12 @@ public class HotelManager {
 
     // Generate Automatic Room Seeds
     public void generateRooms() {
-        hotel.addRoom(new Room(101, 1, "Single", 75.0, 1));
-        hotel.addRoom(new Room(102, 2, "Double", 100.0, 2));
-        hotel.addRoom(new Room(103, 2, "Suite", 200.0, 4));
+        hotel.addRoom(new Room(101, 1, "Single", 1));
+        hotel.addRoom(new Room(102, 2, "Double", 2));
+        hotel.addRoom(new Room(103, 2, "Suite", 4));
     }
 
-    // Get List of Reservations from Hotel
-    public ArrayList<Reservation> getReservationList() {
-        return hotel.getReservationList();
-    }
-
-    // Get List of Guests from Hotel
-    public ArrayList<Guest> getGuestList() {
-        return hotel.getGuestList();
-    }
-
-    // Get List of Rooms from Hotel
-    public ArrayList<Room> getRoomList() {
-        return hotel.getRoomList();
-    }
-
-    // ~ Utility Methods ~ //
-
+    /* ~ Utility Methods ~ */
     // Check if Input is a Valid Date
     public boolean isValidDateFormat(String date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
@@ -170,5 +243,4 @@ public class HotelManager {
         }
         return 0;
     }
-
 }
