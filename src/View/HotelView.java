@@ -27,7 +27,7 @@ public class HotelView {
         System.out.println("[2] Add a New Guest");
         System.out.println("[3] Check-In a Guest");
         System.out.println("[4] Check-Out a Guest");
-        System.out.println("[5] Delete an Existing Reservation");
+        System.out.println("[5] Cancel an Existing Reservation");
         System.out.println("[6] Delete an Existing Guest");
         System.out.println("[7] List All Reservations");
         System.out.println("[8] List All Guests");
@@ -40,97 +40,122 @@ public class HotelView {
 
     // 1. Display Add Reservation
     public void displayAddReservation() {
-        System.out.print("Enter Guest ID: ");
-        int guestID = input.nextInt();
-        System.out.print("Enter Number of Guests: ");
-        int guestNumber = input.nextInt();
-        System.out.print("Enter Start State [MM/DD/YY]: ");
-        String startDate = input.next();
-        System.out.print("Enter End Date [MM/DD/YY]: ");
-        String endDate = input.next();
 
-        int responseCode = manager.addReservationHelper(guestID, guestNumber, startDate, endDate);
+        // Catch any exceptions from user input
+        try {
+            // Display and get Reservation details
+            System.out.println(" ~ Add a Reservation ~ ");
+            System.out.print("Enter Guest ID: ");
+            int guestID = input.nextInt();
+            System.out.print("Enter Number of Guests: ");
+            int guestNumber = input.nextInt();
+            System.out.print("Enter Start State [MM/DD/YY]: ");
+            String startDate = input.next();
+            System.out.print("Enter End Date [MM/DD/YY]: ");
+            String endDate = input.next();
+            System.out.println("Types of Rooms: ");
+            System.out.println("[1] Single");
+            System.out.println("[2] Double");
+            System.out.println("[3] Suite");
+            System.out.print("Enter Room Type Choice [1/2/3]: ");
+            int roomTypeInt = input.nextInt();
 
-        if (responseCode == -1) {
-            System.out.println("ERROR: Cannot Add Reservation - Invalid Length of Stay.");
-        } else if (responseCode == -2) {
-            System.out.println("ERROR: Cannot Add Reservation - Invalid Date.");
-        } else if (responseCode == -3) {
-            System.out.println("ERROR: Cannot Add Reservation - Invalid Guest ID.");
-        } else if (responseCode == -4) {
-            System.out.println("ERROR: Cannot Add Reservation - No Rooms Avaiable.");
-        } else {
-            System.out.println("SUCCESS: Reservation Added.");
+            // Display the response from Hotel Manager
+            String response = manager.addReservationHelper(guestID, guestNumber, startDate, endDate, roomTypeInt);
+            System.out.println(response);
+
+        } catch (Exception e) {
+            System.out.println("ERROR: Invalid Input.");
         }
     }
 
     // 2. Display Add Guest
     public void displayAddGuest() {
-        // Get the guest name
-        System.out.print("Enter Guest Name: ");
-        String guestName = input.next();
 
-        manager.addGuestHelper(guestName);
+        // Catch any exceptions from user input
+        try {
+            // Display and get Guest name from the user
+            System.out.print("Enter Guest Name: ");
+            String guestName = input.next();
+
+            // Display the response from Hotel Manager
+            String response = manager.addGuestHelper(guestName);
+            System.out.println(response);
+
+        } catch (Exception e) {
+            System.out.println("ERROR: Invalid Input.");
+        }
     }
 
     // 3. Display Check-In Guest
     public void displayCheckInGuest() {
-        System.out.print("Enter Reservation ID: ");
-        int reservationID = input.nextInt();
 
-        int response = manager.checkInGuestHelper(reservationID);
+        // Catch any exceptions from user input
+        try {
+            // Display and get Reservation ID from the user
+            System.out.print("Enter Reservation ID: ");
+            int reservationID = input.nextInt();
 
-        if (response == 1) {
-            System.out.println("SUCCESS: Checked-In Guest.");
-        } else if (response == -1) {
-            System.out.println("ERROR: No Rooms Available.");
-        } else if (response == -2) {
-            System.out.println("ERROR: Problem with Reservation ID.");
+            // Display the response from Hotel Manager
+            String response = manager.checkInGuestHelper(reservationID);
+            System.out.println(response);
+
+        } catch (Exception e) {
+            System.out.println("ERROR: Invalid Input.");
         }
     }
 
     // 4. Display Check-Out Guest
     public void displayCheckOutGuest() {
-        System.out.print("Enter Reservation ID: ");
-        int reservationID = input.nextInt();
 
-        int response = manager.checkOutGuestHelper(reservationID);
+        // Catch any exceptions from user input
+        try {
+            // Display and get Reservation ID from the user
+            System.out.print("Enter Reservation ID: ");
+            int reservationID = input.nextInt();
 
-        if (response == 1) {
-            System.out.println("SUCCESS: Guest is Checked-Out.");
-        } else if (response == -1) {
-            System.out.println("ERROR: Problem with Room.");
-        } else if (response == -2) {
-            System.out.println("ERROR: Cannot Find Active Reservation.");
+            // Display the response from Hotel Manager
+            String response = manager.checkOutGuestHelper(reservationID);
+            System.out.println(response);
+
+        } catch (Exception e) {
+            System.out.println("ERROR: Invalid Input.");
         }
     }
 
     // 5. Display Delete Reservation
-    public void displayDeleteReservation() {
-        System.out.print("Enter Reservation ID: ");
-        int reservationID = input.nextInt();
+    public void displayCancelReservation() {
+        // Catch any exceptions from user input
+        try {
+            // Display and get Reservation ID from the user
+            System.out.print("Enter Reservation ID: ");
+            int reservationID = input.nextInt();
 
-        int response = manager.deleteReservationHelper(reservationID);
+            // Display the response from Hotel Manager
+            String response = manager.cancelReservationHelper(reservationID);
+            System.out.println(response);
 
-        if (response == 1) {
-            System.out.println("SUCCESS: Reservation Removed.");
-        } else {
-            System.out.println("ERROR: Cannot Find Reservation.");
+        } catch (Exception e) {
+            System.out.println("ERROR: Invalid Input.");
         }
     }
 
     // 6. Display Delete Guest
     public void displayDeleteGuest() {
-        System.out.print("Enter Guest ID: ");
-        int guestID = input.nextInt();
+        // Catch any exceptions from user input
+        try {
+            // Display and get Guest ID from the user
+            System.out.print("Enter Guest ID: ");
+            int guestID = input.nextInt();
 
-        int response = manager.deleteGuestHelper(guestID);
+            // Display the response from Hotel Manager
+            String response = manager.deleteGuestHelper(guestID);
+            System.out.println(response);
 
-        if (response == 1) {
-            System.out.println("SUCCESS: Removed Guest with ID " + guestID + ".");
-        } else {
-            System.out.println("ERROR: Cannot Find Guest with ID " + guestID + ".");
+        } catch (Exception e) {
+            System.out.println("ERROR: Invalid Input.");
         }
+
     }
 
     public void displayAllReservations() {
@@ -144,8 +169,10 @@ public class HotelView {
             System.out.println("Check-In Date: " + reservation.getStartDate());
             System.out.println("Check-Out Date: " + reservation.getEndDate());
             System.out.println("Length of Stay: " + reservation.getLengthOfStay());
+            System.out.println("Room Type: " + reservation.getRoomType());
             System.out.println("Status: " + reservation.getStatus());
             System.out.println("Total Payment: $" + reservation.getPaymentTotal());
+            System.out.println("---");
         }
     }
 
@@ -155,7 +182,10 @@ public class HotelView {
         System.out.println("\n**********");
         System.out.println("~ All Guests at Hotel ~");
         for (Guest guest : guestList) {
-            System.out.println("Guest Name: " + guest.getGuestName() + " ID: " + guest.getGuestID());
+            System.out.println("ID: " + guest.getGuestID());
+            System.out.println("Guest Name: " + guest.getGuestName());
+            System.out.println("Status: " + guest.getGuestStatus());
+            System.out.println("---");
         }
     }
 
@@ -170,7 +200,7 @@ public class HotelView {
             System.out.println("Rate/Night: $" + room.getRate());
             System.out.println("Room Type: " + room.getRoomType());
             System.out.println("Available?: " + room.getAvailability());
-            System.out.println("Max Capacity?: " + room.getMaxCapacity());
+            System.out.println("Max Capacity: " + room.getMaxCapacity());
             System.out.println("---");
         }
     }

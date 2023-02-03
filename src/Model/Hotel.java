@@ -24,11 +24,6 @@ public class Hotel {
         guestList.add(guest);
     }
 
-    // 5. Delete Reservation from Array List
-    public void removeReservation(Reservation reservation) {
-        reservationList.remove(reservation);
-    }
-
     // 6. Delete Guest from Array List
     public void removeGuest(Guest guest) {
         guestList.remove(guest);

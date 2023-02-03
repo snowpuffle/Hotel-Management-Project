@@ -11,9 +11,11 @@ public class Payment {
         roomTypeCostMap.put("Suite", 100.0);
     }
 
-    public static double calculatePayment(String roomType, int numOfDays) {
+    public static double calculatePayment(String roomType, long numOfDays) {
         if (roomTypeCostMap.containsKey(roomType)) {
-            return roomTypeCostMap.get(roomType) * numOfDays;
+
+            double totalCost = roomTypeCostMap.get(roomType) * numOfDays;
+            return totalCost;
         }
         return 0.0;
     }

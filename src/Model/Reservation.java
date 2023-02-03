@@ -4,55 +4,55 @@ import java.util.Random;
 
 public class Reservation {
     private static Random random = new Random();
-    private Guest guest;
-    private Room room;
-    private String roomType;
-    private String startDate;
-    private String endDate;
-    private long lengthOfStay;
-    private double paymentTotal;
+    private Guest reservationGuest;
+    private Room reservationRoom;
+    private String reservationRoomType;
+    private String reservationStartDate;
+    private String reservationEndDate;
+    private long reservationLength;
+    private double reservationPaymentTotal;
     private int reservationID;
-    private String status;
+    private String reservationStatus;
     private int numberOfGuests;
 
     public Reservation(Guest guest, String roomType, String startDate, String endDate,
             long lengthOfStay, int numberOfGuests) {
 
-        this.guest = guest;
-        this.roomType = roomType;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.lengthOfStay = lengthOfStay;
+        this.reservationGuest = guest;
+        this.reservationRoomType = roomType;
+        this.reservationStartDate = startDate;
+        this.reservationEndDate = endDate;
+        this.reservationLength = lengthOfStay;
         this.numberOfGuests = numberOfGuests;
 
-        this.room = null;
-        this.status = "Confirmed";
-        this.paymentTotal = Payment.calculatePayment(roomType, numberOfGuests);
+        this.reservationRoom = null;
+        this.reservationStatus = "Confirmed";
+        this.reservationPaymentTotal = Payment.calculatePayment(roomType, lengthOfStay);
         this.reservationID = random.nextInt(1000);
     }
 
     public Guest getGuest() {
-        return guest;
+        return reservationGuest;
     }
 
     public Room getRoom() {
-        return room;
+        return reservationRoom;
     }
 
     public void setRoom(Room room) {
-        this.room = room;
+        this.reservationRoom = room;
     }
 
     public String getStatus() {
-        return status;
+        return reservationStatus;
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        this.reservationStatus = status;
     }
 
     public String getRoomType() {
-        return roomType;
+        return reservationRoomType;
     }
 
     public int getNumberOfGuests() {
@@ -60,15 +60,15 @@ public class Reservation {
     }
 
     public String getStartDate() {
-        return startDate;
+        return reservationStartDate;
     }
 
     public String getEndDate() {
-        return endDate;
+        return reservationEndDate;
     }
 
     public double getPaymentTotal() {
-        return paymentTotal;
+        return reservationPaymentTotal;
     }
 
     public int getReservationID() {
@@ -76,6 +76,6 @@ public class Reservation {
     }
 
     public long getLengthOfStay() {
-        return lengthOfStay;
+        return reservationLength;
     }
 }

@@ -38,7 +38,7 @@ public class Main {
                     break;
                 case 5:
                     // Delete a Reservation
-                    manager.deleteReservation();
+                    manager.cancelReservation();
                     break;
                 case 6:
                     // Delete an Existing Guest

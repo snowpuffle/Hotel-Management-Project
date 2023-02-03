@@ -15,6 +15,7 @@ public class HotelManager {
     private Hotel hotel;
     private HotelView view;
 
+    /* ~ Class Constructor ~ */
     public HotelManager(Hotel hotel) {
         this.hotel = hotel;
     }
@@ -31,26 +32,39 @@ public class HotelManager {
     }
 
     // 1. Add a Reservation Helper
-    public int addReservationHelper(int guestID, int guestNumber, String startDate, String endDate) {
+    public String addReservationHelper(int guestID, int guestNumber, String startDate, String endDate,
+            int roomTypeInt) {
 
+        // Find the Guest by ID
         Guest guest = findGuestByID(guestID);
-        Room room = findAvailableRoom(guestNumber);
+
+        // Find the String for Room type
+        String roomTypeString = getRoomType(roomTypeInt);
+
+        // Find an available Room with matching number of guests and room type
+        Room room = findAvailableRoom(guestNumber, roomTypeString);
+
+        // Check if the dates are valid
         boolean validDate = isValidDateFormat(startDate) && isValidDateFormat(endDate);
+
+        // Calculate the length of stay
         long lengthOfStay = calculateLengthOfStay(startDate, endDate);
 
-        if (lengthOfStay <= 0) {
-            return -1;
-        } else if (!validDate) {
-            return -2;
+        // Continue if all variables are valid
+        if (lengthOfStay <= 0 || !validDate) {
+            return "ERROR: Invalid Dates.";
         } else if (guest == null) {
-            return -3;
+            return "ERROR: Invalid Guest ID.";
+        } else if (guest.getGuestStatus() == "Deleted") {
+            return "ERROR: Cannot Add Reservation to a Deleted Guest.";
         } else if (room == null) {
-            return -4;
+            return "ERROR: Cannot Add Reservation - No Rooms Avaiable.";
         } else {
+            // Create a new Reservation and add to Hotel list
             Reservation reservation = new Reservation(guest, room.getRoomType(),
                     startDate, endDate, lengthOfStay, guestNumber);
             hotel.addReservation(reservation);
-            return 1;
+            return "SUCCESS: Reservation Added.";
         }
     }
 
@@ -60,80 +74,94 @@ public class HotelManager {
     }
 
     // 2. Add a Guest Helper
-    public void addGuestHelper(String guestName) {
-        // Create a new Guest object
-        Guest guest = new Guest(guestName);
+    public String addGuestHelper(String guestName) {
 
-        // Add Guest to list in Hotel
+        // Create a new Guest object
+        Guest guest = new Guest(guestName, "Future Guest");
+
+        // Add Guest to the Hotel list
         hotel.addGuest(guest);
+        return "SUCCESS: Added Guest to Hotel.";
     }
 
-    // 3. Check-In Guest
+    // 3. Check-In a Guest
     public void checkInGuest() {
         // View Display
         view.displayCheckInGuest();
     }
 
-    // 3. Check-In Guest Helper
-    public int checkInGuestHelper(int reservationID) {
+    // 3. Check-In a Guest Helper
+    public String checkInGuestHelper(int reservationID) {
+
         // Find Reservation using ID
         Reservation reservation = findReservationByID(reservationID);
 
-        if (reservation != null) {
-            Room room = findAvailableRoom(reservation.getNumberOfGuests());
-            if (reservation.getStatus() == "Confirmed" && room != null)
-                if (room != null) {
-                    room.setAvailability(false);
-                    reservation.setRoom(room);
-                    reservation.setStatus("Active");
-                    return 1;
-                }
-            return -1;
+        // Continue if a Reservation is found
+        if (reservation != null && reservation.getStatus() == "Confirmed") {
+            // Get Guest from Reservation
+            Guest guest = reservation.getGuest();
+            Room room = findAvailableRoom(reservation.getNumberOfGuests(), reservation.getRoomType());
+            if (room != null && guest != null) {
+                guest.setGuestStatus("Active");
+                room.setAvailability(false);
+                reservation.setRoom(room);
+                reservation.setStatus("Active");
+                return "SUCCESS: Guest is Checked-In.";
+            }
+            return "ERROR: No Rooms Available.";
         } else {
-            return -2;
+            return "ERROR: Problem with Reservation ID.";
         }
     }
 
-    // 4. Check-Out Guest
+    // 4. Check-Out a Guest
     public void checkOutGuest() {
         view.displayCheckOutGuest();
     }
 
-    // 4. Check-Out Guest Helper
-    public int checkOutGuestHelper(int reservationID) {
+    // 4. Check-Out a Guest Helper
+    public String checkOutGuestHelper(int reservationID) {
         // Find Reservation using ID
         Reservation reservation = findReservationByID(reservationID);
 
         if (reservation != null) {
             Room room = reservation.getRoom();
-            if (reservation.getStatus() == "Active" && room != null) {
+            Guest guest = reservation.getGuest();
+            if (reservation.getStatus() == "Active" && room != null && guest != null) {
+                guest.setGuestStatus("Past Guest");
                 room.setAvailability(true);
                 reservation.setStatus("Past");
-                return 1;
+                return "SUCCESS: Guest is Checked-Out.";
             }
             // Cannot Find Room in Reservation
-            return -1;
+            return "ERROR: Problem with Room.";
         } else {
             // Cannot Find Active Reservation
-            return -2;
+            return "ERROR: Cannot Find Active Reservation.";
         }
     }
 
     // 5. Delete a Reservation
-    public void deleteReservation() {
-        view.displayDeleteReservation();
+    public void cancelReservation() {
+        view.displayCancelReservation();
     }
 
     // 5. Delete a Reservation Helper
-    public int deleteReservationHelper(int reservationID) {
+    public String cancelReservationHelper(int reservationID) {
 
+        // Find the Reservation by ID
         Reservation reservation = findReservationByID(reservationID);
 
-        if (reservation != null) {
-            hotel.removeReservation(reservation);
-            return 1;
+        // Continue if Reservation exists
+        if (reservation == null) {
+            return "ERROR: Cannot Find Reservation.";
+        } else if (reservation.getStatus() == "Active") {
+            return "ERROR: Cannot Cancel an Active Reservation.";
+        } else if (reservation.getStatus() == "Cancelled") {
+            return "ERROR: Reservation Already Cancelled.";
         } else {
-            return -1;
+            reservation.setStatus("Cancelled");
+            return "SUCCESS: Reservation is Cancelled.";
         }
     }
 
@@ -143,16 +171,18 @@ public class HotelManager {
     }
 
     // 6. Delete an Existing Guest Helper
-    public int deleteGuestHelper(int guestID) {
+    public String deleteGuestHelper(int guestID) {
         // Try to find the Guest using ID
         Guest guest = findGuestByID(guestID);
 
         // Remove only if the Guest is found
-        if (guest != null) {
-            hotel.removeGuest(guest);
-            return 1;
+        if (guest == null) {
+            return "ERROR: Cannot Find Guest with ID " + guestID + ".";
+        } else if (guest.getGuestStatus() == "Active") {
+            return "ERROR: Cannot Delete an Active Guest.";
         } else {
-            return -1;
+            guest.setGuestStatus("Deleted");
+            return "SUCCESS: Removed Guest with ID " + guestID + ".";
         }
     }
 
@@ -180,13 +210,19 @@ public class HotelManager {
 
     /* ~ Helper Methods ~ */
     // Find an Available Room by Number of Guests
-    public Room findAvailableRoom(int numberOfGuests) {
-        for (Room room : hotel.getRoomList()) {
-            if (room.getAvailability() == true && room.getMaxCapacity() >= numberOfGuests) {
-                return room;
+    public Room findAvailableRoom(int numberOfGuests, String roomTypeString) {
+
+        if (roomTypeString != null) {
+            for (Room room : hotel.getRoomList()) {
+                if (room.getAvailability() == true && room.getMaxCapacity() >= numberOfGuests
+                        && room.getRoomType() == roomTypeString) {
+                    return room;
+                }
             }
+            return null;
+        } else {
+            return null;
         }
-        return null;
     }
 
     // Find Reservation by ID
@@ -214,6 +250,19 @@ public class HotelManager {
         hotel.addRoom(new Room(101, 1, "Single", 1));
         hotel.addRoom(new Room(102, 2, "Double", 2));
         hotel.addRoom(new Room(103, 2, "Suite", 4));
+    }
+
+    // Get Room Type
+    public String getRoomType(int roomTypeInt) {
+        if (roomTypeInt == 1) {
+            return "Single";
+        } else if (roomTypeInt == 2) {
+            return "Double";
+        } else if (roomTypeInt == 3) {
+            return "Suite";
+        } else {
+            return null;
+        }
     }
 
     /* ~ Utility Methods ~ */
